@@ -5,6 +5,10 @@ const dotenv = require('dotenv')
 dotenv.config({ path: './config/config.env' }) //the path defaults to a root .env file but we put it in a config folder so we need to specify the path that it's in
 
 const app = express()
+app.use(express.json({ extended: false }))
+
+// Mount API
+app.use('/api', require('./server/routes'))
 
 const PORT = process.env.PORT || 5000
 

@@ -1,0 +1,2 @@
+Controllers will be middleware functions that handle our logic for us when a user sends a request to routes. This is oppose to having the
+location right in the routes themselves, making it neater
