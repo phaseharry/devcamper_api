@@ -1,4 +1,5 @@
 const Bootcamp = require('../models/Bootcamp')
+const ErrorResponse = require('../utils/errorResponse')
 
 /*
   @desc     Get all bootcamps
@@ -13,7 +14,6 @@ exports.getBootcamps = (req, res, next) => {
         .json({ success: true, count: bootcamps.length, data: bootcamps })
     )
     .catch(err => {
-      err.status = 400
       next(err)
     })
 }
@@ -27,13 +27,18 @@ exports.getBootcamp = (req, res, next) => {
   Bootcamp.findById(req.params.id)
     .then(bootcamp => {
       if (!bootcamp) {
-        // if bootcamp is not found, send a 400 response now since ID passed in as a param is a bad ID
-        return res.status(400).json({ success: false })
+        // if bootcamp is not found (but the _id is formatted correctly), pass it to the custom errorHandling middleware
+        return next(
+          new ErrorResponse(
+            `Bootcamp not found with id of ${req.params.id}`,
+            404
+          )
+        )
       }
       res.status(200).json({ success: true, data: bootcamp })
     })
     .catch(err => {
-      err.status = 400
+      // if the _id is not formatted correctly, then this .catch will run
       next(err)
     })
 }
@@ -52,8 +57,6 @@ exports.createBootcamp = (req, res, next) => {
       })
     })
     .catch(err => {
-      err.status = 400
-      console.error(err)
       next(err)
     })
 }
@@ -70,8 +73,12 @@ exports.updateBootcamp = (req, res, next) => {
   })
     .then(updatedBootcamp => {
       if (!updatedBootcamp) {
-        // if bootcamp does not exist, return a 400 response
-        return res.status(400).json({ success: false })
+        return next(
+          new ErrorResponse(
+            `Bootcamp not found with id of ${req.params.id}`,
+            404
+          )
+        )
       }
       res.status(200).json({
         success: true,
@@ -94,7 +101,12 @@ exports.deleteBootcamp = (req, res, next) => {
       // .findByIdAndDelete returns the deleted bootcamp prior to its deletion
       if (!deletedBootcamp) {
         // if there was no bootcamp to be found then we send back a 400 error
-        return res.status(400).json({ success: false })
+        return next(
+          new ErrorResponse(
+            `Bootcamp not found with id of ${req.params.id}`,
+            404
+          )
+        )
       }
       res.status(200).json({ success: true, data: {} })
     })

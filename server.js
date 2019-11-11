@@ -21,6 +21,10 @@ if (process.env.NODE_ENV === 'development') {
 // Mount API
 app.use('/api', require('./routes'))
 
+// Final error handling middleware
+const errorHandler = require('./middleware/error')
+app.use(errorHandler)
+
 const PORT = process.env.PORT || 5000
 
 app.on('ready', () => {
@@ -36,11 +40,4 @@ app.on('ready', () => {
 app.on('dbConnectionFailure', err => {
   console.log(`Error: ${err.reason}`.red)
   process.exit(1)
-})
-
-// Final error handling middleware
-app.use((err, req, res, next) => {
-  const status = err.status || 500
-  const msg = err.message || 'Server Error'
-  res.status(status).json({ msg, success: false })
 })

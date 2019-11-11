@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const BootcampSchema = new mongoose.Schema({
   name: {
     type: String,
-    require: [true, 'Please add a name'], // value then a custom message if the name is not supplied when Bootcamp instance is not made
+    required: [true, 'Please add a name'], // value then a custom message if the name is not supplied when Bootcamp instance is not made
     unique: true,
     trim: true, // remove any outer white spaces
     maxlength: [50, 'Name cannot be more than 50 characters']
