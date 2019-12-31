@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+const slugify = require('slugify')
+
+const geocoder = require('../utils/geocoder')
 
 const BootcampSchema = new mongoose.Schema({
   name: {
@@ -97,5 +100,35 @@ const BootcampSchema = new mongoose.Schema({
     default: Date.now
   }
 })
+
+// Create bootcamp slug from the name
+BootcampSchema.pre('save', function (next) { // the next function is called to move on to the next middleware
+  /*
+    have to use regular functions because we're using the "this" keyword. This function basically acts as a method. 
+    If we used arrow functions, it would inherits, its "this" would inherit the value of "this" outside the scope
+  */
+  this.slug = slugify(this.name, { lower: true }) //using the name field to create a slug and assigning it to the slug field 
+  next()
+})
+
+// Geocode & create location field
+BootcampSchema.pre('save', async function (next) {
+  const loc = await geocoder.geocode(this.address) //returns an array with a single object containing our data
+  this.location = {
+    type: 'Point',
+    coordinates: [loc[0].longitude, loc[0].latitude],
+    formattedAddress: loc[0].formattedAddress,
+    street: loc[0].streetName,
+    city: loc[0].city,
+    state: loc[0].stateCode,
+    zipcode: loc[0].zipcode,
+    country: loc[0].countryCode
+  }
+
+  // Do not save address in database since we already have the location data
+  this.address = undefined
+  next()
+})
+
 
 module.exports = mongoose.model('Bootcamp', BootcampSchema)
